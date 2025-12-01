@@ -1,23 +1,17 @@
 from rest_framework import serializers
-from .models import WatchList, StreamPlatform
+from .models import StreamPlatform, WatchList
 
 
-# ---------------------------------------------------
-# WatchList Serializer
-# ---------------------------------------------------
 class WatchlistSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = WatchList
         fields = '__all__'
 
 
 
-
-# ---------------------------------------------------
-# StreamPlatform Serializer (BEST: ModelSerializer)
-# ---------------------------------------------------
 class StreamPlatformSerializer(serializers.ModelSerializer):
+    watchlist = serializers.HyperlinkedRelatedField(many=True,
+                                                    read_only=True,view_name='watchlist_detail')
 
     class Meta:
         model = StreamPlatform
