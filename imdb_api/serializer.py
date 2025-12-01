@@ -10,12 +10,26 @@ class WatchlistSerializer(serializers.ModelSerializer):
 
 
 class StreamPlatformSerializer(serializers.ModelSerializer):
-    watchlist = serializers.HyperlinkedRelatedField(many=True,
-                                                    read_only=True,view_name='watchlist_detail')
+    # watchlist = serializers.HyperlinkedRelatedField(many=True,read_only=True,view_name='watchlist_detail')
+    watchlist = WatchlistSerializer(many=True,read_only=True)
 
     class Meta:
         model = StreamPlatform
         fields = "__all__"
+
+#------field level validation
+    def validate_name(self,value):
+        if len(value) <= 3:
+            raise serializers.ValidationError("name is to short ")
+        return value
+
+#----object level validation:
+    def validate(self,data):
+        if data['name'] == data['about']:
+            raise serializers.ValidationError({'name and about must be different'})
+        return data
+
+
 
 
     # def update(self, instance, validated_data):
