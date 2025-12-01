@@ -6,8 +6,8 @@ from rest_framework import status
 from rest_framework.generics import GenericAPIView
 from rest_framework.views import APIView
 from imdb_api.models import WatchList
-from .serializer import WatchlistSerializer,StreamPlatformSerializer
-from .models import StreamPlatform
+from .serializer import WatchlistSerializer,StreamPlatformSerializer,ReviewSerializer
+from .models import StreamPlatform,Review
 from rest_framework.response import Response
 from rest_framework import reverse
 from rest_framework import mixins
@@ -24,6 +24,32 @@ def api_root(request, format=None):
         'watchlist':reverse('movie_list',request=request,format=format),
         'streamplatform':reverse('stream_platform',request=request,format=format),
     })
+
+class ReviewCreate(generics.CreateAPIView):
+    serializer_class = ReviewSerializer
+
+    def perform_create(self,serializer):
+        pk = self.kwargs['pk']
+        movie = WatchList.objects.get(pk=pk)
+        serializer.save(watchlist=movie)
+
+
+
+
+
+class ReviewListView(generics.ListAPIView):
+    queryset = Review.objects.all()
+    serializer_class = ReviewSerializer
+
+    def get_queryset(self):
+        pk = self.kwargs['pk']
+        return Review.objects.filter(watchlist=pk)
+
+
+class ReviewDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Review.objects.all()
+    serializer_class = ReviewSerializer
+
 
 
 class StreamPlatformViewSet(viewsets.ModelViewSet):
@@ -45,15 +71,15 @@ class StreamPlatformViewSet(viewsets.ModelViewSet):
 #     serializer_class = StreamPlatformSerializer
 
 #-------
-# @api_view(['GET'])
-# def movie_list(request):
-#     movie_list = WatchList.objects.all()
-#     serialized = WatchlistSerializer(movie_list,many=True)
-#     return Response(serialized.data)
+@api_view(['GET'])
+def movie_list(request):
+    movie_list = WatchList.objects.all()
+    serialized = WatchlistSerializer(movie_list,many=True)
+    return Response(serialized.data)
 #
-#
-def movie_detail(request,pk):
-    movie = WatchList.objects.get(pk=pk)
+@api_view(['GET'])
+def movie_detail(request):
+    movie = WatchList.objects.all()
     serialized = WatchlistSerializer(movie)
     return Response(serialized.data)
 
