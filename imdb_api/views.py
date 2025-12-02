@@ -16,6 +16,8 @@ from rest_framework import generics
 from rest_framework.decorators import api_view
 from rest_framework.reverse import reverse
 from rest_framework import viewsets
+from .permissions import AdminOrReadOnly,ReviewUserOrReadOnly
+
 
 
 
@@ -30,6 +32,7 @@ def api_root(request, format=None):
 
 
 class ReviewCreate(generics.CreateAPIView):
+    # permission_classes = [ReviewUserOrReadOnly]
     serializer_class = ReviewSerializer
 
     def perform_create(self,serializer):
@@ -49,7 +52,7 @@ class ReviewListView(generics.ListAPIView):
 
 
 class ReviewDetailView(generics.RetrieveUpdateDestroyAPIView):
-    permission_classes = [IsAdminUser]
+    permission_classes = [ReviewUserOrReadOnly]
     queryset = Review.objects.all()
     serializer_class = ReviewSerializer
 
