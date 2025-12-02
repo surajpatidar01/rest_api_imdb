@@ -4,6 +4,7 @@ from django.http import Http404
 
 from rest_framework import status
 from rest_framework.generics import GenericAPIView
+from rest_framework.permissions import IsAuthenticated,IsAdminUser
 from rest_framework.views import APIView
 from imdb_api.models import WatchList
 from .serializer import WatchlistSerializer,StreamPlatformSerializer,ReviewSerializer
@@ -38,6 +39,7 @@ class ReviewCreate(generics.CreateAPIView):
 
 
 class ReviewListView(generics.ListAPIView):
+    permission_classes =[IsAuthenticated]
     queryset = Review.objects.all()
     serializer_class = ReviewSerializer
 
@@ -47,14 +49,38 @@ class ReviewListView(generics.ListAPIView):
 
 
 class ReviewDetailView(generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = [IsAdminUser]
     queryset = Review.objects.all()
     serializer_class = ReviewSerializer
+
+
+
 
 class StreamPlatformViewSet(viewsets.ModelViewSet):
     #the viewset automatically provide all CRUD operation functionality :
     queryset  = StreamPlatform.objects.all()
     serializer_class = StreamPlatformSerializer
 
+
+
+
+
+
+
+
+
+#-------
+@api_view(['GET'])
+def movie_list(request):
+    movie_list = WatchList.objects.all()
+    serialized = WatchlistSerializer(movie_list,many=True)
+    return Response(serialized.data)
+#
+@api_view(['GET'])
+def movie_detail(request):
+    movie = WatchList.objects.all()
+    serialized = WatchlistSerializer(movie)
+    return Response(serialized.data)
 
 
 
@@ -69,18 +95,6 @@ class StreamPlatformViewSet(viewsets.ModelViewSet):
 #     queryset = StreamPlatform.objects.all()
 #     serializer_class = StreamPlatformSerializer
 
-#-------
-@api_view(['GET'])
-def movie_list(request):
-    movie_list = WatchList.objects.all()
-    serialized = WatchlistSerializer(movie_list,many=True)
-    return Response(serialized.data)
-#
-@api_view(['GET'])
-def movie_detail(request):
-    movie = WatchList.objects.all()
-    serialized = WatchlistSerializer(movie)
-    return Response(serialized.data)
 
 #
 # class StreamPlatformList(mixins.ListModelMixin,
