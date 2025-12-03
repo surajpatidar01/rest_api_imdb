@@ -3,6 +3,7 @@ from django.http import JsonResponse
 from django.http import Http404
 
 from rest_framework import status
+from rest_framework.exceptions import ValidationError
 from rest_framework.generics import GenericAPIView
 from rest_framework.permissions import IsAuthenticated,IsAdminUser
 from rest_framework.views import APIView
@@ -17,6 +18,7 @@ from rest_framework.decorators import api_view
 from rest_framework.reverse import reverse
 from rest_framework import viewsets
 from .permissions import AdminOrReadOnly,ReviewUserOrReadOnly
+
 
 
 
@@ -38,7 +40,20 @@ class ReviewCreate(generics.CreateAPIView):
     def perform_create(self,serializer):
         pk = self.kwargs['pk']
         movie = WatchList.objects.get(pk=pk)
-        serializer.save(watchlist=movie)
+        review_user = self.request.user
+        review_queryset = Review.objects.filter(review_user = review_user,watchlist = movie)
+        if review_queryset:
+            raise ValidationError("cant review multiple time")
+
+        if movie.number_ratting == 0:
+            movie.av_ratting = serializer.validated_data['ratting']
+        else:
+            movie.av_ratting = (movie.av_ratting + serializer.validated_data['ratting'])/2
+
+        movie.number_ratting += 1
+        movie.save()
+        serializer.save(watchlist=movie,review_user = review_user)
+
 
 
 class ReviewListView(generics.ListAPIView):
